@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-var Default = binary.BigEndian
+var Default = binary.LittleEndian
 
 func ReadUint8(r io.Reader) (uint8, error) {
 	var bytes = make([]byte, 1)
@@ -14,6 +14,15 @@ func ReadUint8(r io.Reader) (uint8, error) {
 	}
 
 	return uint8(bytes[0]), nil
+}
+
+func ReadUint16(r io.Reader) (uint16, error) {
+	var bytes = make([]byte, 2)
+	if _, err := io.ReadFull(r, bytes); err != nil {
+		return 0, err
+	}
+
+	return Default.Uint16(bytes), nil
 }
 
 func ReadUint32(r io.Reader) (uint32, error) {
@@ -39,8 +48,30 @@ func ReadBytes(r io.Reader) ([]byte, error) {
 	return buf, nil
 }
 
+func ReadFixedBytes(len int, r io.Reader) ([]byte, error) {
+	buf := make([]byte, len)
+
+	if _, err := io.ReadFull(r, buf); err != nil {
+		return nil, err
+	}
+
+	return buf, nil
+}
+
 func WriteUint8(w io.Writer, val uint8) error {
 	buf := []byte{byte(val)}
+
+	if _, err := w.Write(buf); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func WriteUint16(w io.Writer, val uint16) error {
+	buf := make([]byte, 2)
+
+	Default.PutUint16(buf, val)
 
 	if _, err := w.Write(buf); err != nil {
 		return err
