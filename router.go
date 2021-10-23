@@ -1,0 +1,92 @@
+package kim
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+
+	"jinv/kim/wire/pkt"
+)
+
+var ErrSessionLost = errors.New("err:session lost")
+
+type Router struct {
+	handlers *FuncTree
+	pool     sync.Pool
+}
+
+func NewRouter() *Router {
+	r := &Router{
+		handlers: NewTree(),
+	}
+
+	r.pool.New = func() interface{} {
+		return BuildContext()
+	}
+
+	return r
+}
+
+func (r *Router) Handle(command string, handlers ...HandlerFunc) {
+	r.handlers.Add(command, handlers...)
+}
+
+func (r *Router) Serve(packet *pkt.LogicPkt, dispatcher Dispatcher, cache SessionStorage, session Session) error {
+	if dispatcher == nil {
+		return fmt.Errorf("dispather is nil")
+	}
+
+	if cache == nil {
+		return fmt.Errorf("cache is nil")
+	}
+
+	ctx := r.pool.Get().(*ContextImpl)
+	ctx.reset()
+	ctx.request = packet
+	ctx.Dispatcher = dispatcher
+	ctx.SessionStorage = cache
+	ctx.session = session
+
+	r.serveContext(ctx)
+
+	r.pool.Put(ctx)
+
+	return nil
+}
+
+func (r *Router) serveContext(ctx *ContextImpl) {
+	chain, ok := r.handlers.Get(ctx.Header().Command)
+	if !ok {
+		ctx.handlers = []HandlerFunc{handleNoFound}
+		ctx.Next()
+		return
+	}
+
+	ctx.handlers = chain
+
+	ctx.Next()
+}
+
+func handleNoFound(ctx Context) {
+	_ = ctx.Resp(pkt.Status_NotImplemented, &pkt.ErrorResp{Message: "NotImplemented"})
+}
+
+type FuncTree struct {
+	nodes map[string]HandlersChain
+}
+
+func NewTree() *FuncTree {
+	return &FuncTree{
+		nodes: make(map[string]HandlersChain, 10),
+	}
+}
+
+func (t *FuncTree) Add(path string, handlers ...HandlerFunc) {
+	t.nodes[path] = append(t.nodes[path], handlers...)
+}
+
+func (t *FuncTree) Get(path string) (HandlersChain, bool) {
+	f, ok := t.nodes[path]
+
+	return f, ok
+}

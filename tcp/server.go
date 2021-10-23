@@ -22,6 +22,7 @@ type Server struct {
 	listen string
 
 	kim.ChannelMap
+	kim.ServiceRegistration
 
 	kim.Acceptor
 	kim.MessageListener
@@ -34,11 +35,12 @@ type Server struct {
 	quit *kim.Event
 }
 
-func NewServer(listen string) kim.Server {
+func NewServer(listen string, service kim.ServiceRegistration) kim.Server {
 	return &Server{
-		listen:     listen,
-		ChannelMap: kim.NewChannels(100),
-		quit:       kim.NewEvent(),
+		listen:              listen,
+		ServiceRegistration: service,
+		ChannelMap:          kim.NewChannels(100),
+		quit:                kim.NewEvent(),
 		options: ServerOptions{
 			loginWait: kim.DefaultLoginWait,
 			readWait:  kim.DefaultReadWait,
@@ -135,7 +137,7 @@ func (s *Server) Start() error {
 func (s *Server) Shutdown(ctx context.Context) error {
 	log := logger.WithFields(logger.Fields{
 		"module": "tcp.server",
-		"id":     "xxxxxx",
+		"id":     s.ServiceID(),
 	})
 
 	s.once.Do(func() {
@@ -155,6 +157,15 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 
 	return nil
+}
+
+func (s *Server) Push(id string, data []byte) error {
+	ch, ok := s.ChannelMap.Get(id)
+	if !ok {
+		return fmt.Errorf("channel %s no found", id)
+	}
+
+	return ch.Push(data)
 }
 
 func (s *Server) SetAcceptor(acceptor kim.Acceptor) {

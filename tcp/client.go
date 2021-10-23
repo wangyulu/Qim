@@ -7,7 +7,6 @@ import (
 
 	"errors"
 
-	"github.com/sirupsen/logrus"
 	"jinv/kim"
 	"jinv/kim/logger"
 )
@@ -26,6 +25,7 @@ type Client struct {
 
 	state   int32
 	options ClientOptions
+	Meta    map[string]string
 
 	once sync.Once
 	sync.Mutex
@@ -34,18 +34,26 @@ type Client struct {
 }
 
 func NewClient(id, name string, opts ClientOptions) kim.Client {
+	return NewClientWithProps(id, name, make(map[string]string), opts)
+}
+
+func NewClientWithProps(id, name string, meta map[string]string, opts ClientOptions) kim.Client {
 	if opts.WriteWait == 0 {
 		opts.WriteWait = kim.DefaultWriteWait
 	}
+
 	if opts.ReadWait == 0 {
 		opts.ReadWait = kim.DefaultReadWait
 	}
 
-	return &Client{
+	cli := &Client{
 		id:      id,
 		name:    name,
 		options: opts,
+		Meta:    meta,
 	}
+
+	return cli
 }
 
 func (c *Client) Connect(addr string) error {
@@ -169,7 +177,7 @@ func (c *Client) heartbeatLoop() error {
 }
 
 func (c *Client) ping() error {
-	logrus.WithField("module", "tcp.client").Tracef("%s send ping to server", c.id)
+	logger.WithField("module", "tcp.client").Tracef("%s send ping to server", c.id)
 
 	// 发送心跳包的时候也要加写超时呀
 	if c.options.WriteWait > 0 {
@@ -179,4 +187,16 @@ func (c *Client) ping() error {
 	}
 
 	return c.conn.WriteFrame(kim.OpPing, nil)
+}
+
+func (c *Client) ServiceID() string {
+	return c.id
+}
+
+func (c *Client) ServiceName() string {
+	return c.name
+}
+
+func (c *Client) GetMeta() map[string]string {
+	return c.Meta
 }

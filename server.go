@@ -13,7 +13,27 @@ const (
 	DefaultHeartbeat = time.Second * 55
 )
 
+// 定义了基础服务的抽象接口
+type Service interface {
+	ServiceID() string
+	ServiceName() string
+	GetMeta() map[string]string
+}
+
+type ServiceRegistration interface {
+	Service
+	PublicAddress() string
+	PublicPort() int
+	DialURL() string
+	GetTags() []string
+	GetProtocol() string
+	GetNamespace() string
+	String() string
+}
+
 type Server interface {
+	ServiceRegistration
+
 	SetAcceptor(Acceptor)
 	SetMessageListener(MessageListener)
 	SetStateListener(StateListener)
@@ -24,7 +44,9 @@ type Server interface {
 	Start() error
 	Shutdown(context.Context) error
 
-	// Push(string, []byte) error
+	// Push 消息到指定的 Channel 中
+	// channelID
+	Push(string, []byte) error
 }
 
 type Acceptor interface {
@@ -80,8 +102,11 @@ type Channel interface {
 }
 
 type Client interface {
+	Service
+
 	ID() string
 	Name() string
+
 	Connect(string) error
 	SetDialer(Dialer)
 	Send([]byte) error

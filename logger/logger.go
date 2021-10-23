@@ -29,6 +29,11 @@ func Tracef(format string, args ...interface{}) {
 	std.Tracef(format, args...)
 }
 
+// Debugf logs a message at level Debug on the standard logger.
+func Debugf(format string, args ...interface{}) {
+	std.Debugf(format, args...)
+}
+
 // Error logs a message at level Error on the standard logger.
 func Error(args ...interface{}) {
 	std.Error(args...)
@@ -51,6 +56,11 @@ func Warn(args ...interface{}) {
 // Warnf logs a message at level Warn on the standard logger.
 func Warnf(format string, args ...interface{}) {
 	std.Warnf(format, args...)
+}
+
+// Infof logs a message at level Info on the standard logger.
+func Infof(format string, args ...interface{}) {
+	std.Infof(format, args...)
 }
 
 // Entry Entry

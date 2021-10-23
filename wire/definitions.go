@@ -41,7 +41,7 @@ const (
 const (
 	SNWGateway = "wgateway" // websocket 网关服务
 	SNTGateway = "tgateway" // tcp 网关服务
-	SNLogin    = "login"    // 登录服务
+	SNLogin    = "chat"     // 登录服务
 	SNChat     = "chat"     // 聊天服务
 	SNService  = "service"  // rpc服务
 )

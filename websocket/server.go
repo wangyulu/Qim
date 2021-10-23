@@ -23,6 +23,7 @@ type Server struct {
 	listen string
 
 	kim.ChannelMap
+	kim.ServiceRegistration
 
 	kim.Acceptor
 	kim.MessageListener
@@ -33,9 +34,10 @@ type Server struct {
 	options ServerOptions
 }
 
-func NewServer(listen string) kim.Server {
+func NewServer(listen string, service kim.ServiceRegistration) kim.Server {
 	return &Server{
-		listen: listen,
+		listen:              listen,
+		ServiceRegistration: service,
 		options: ServerOptions{
 			loginWait: kim.DefaultLoginWait,
 			readWait:  kim.DefaultReadWait,
@@ -50,6 +52,7 @@ func (s *Server) Start() error {
 	log := logger.WithFields(logger.Fields{
 		"module": "ws.server",
 		"listen": s.listen,
+		"id":     s.ServiceID(),
 	})
 
 	if s.Acceptor == nil {
@@ -104,7 +107,7 @@ func (s *Server) Start() error {
 			// 5. 开启一个goroutine中循环读取消息。这里是调用了Channel中的Readloop方法
 			err := ch.ReadLoop(s.MessageListener)
 			if err != nil {
-				log.Warn("readloop - ", err)
+				log.Info(err)
 			}
 
 			// 6.
@@ -124,7 +127,14 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
+	log := logger.WithFields(logger.Fields{
+		"module": "ws.server",
+		"id":     s.ServiceID(),
+	})
 	s.once.Do(func() {
+		defer func() {
+			log.Infoln("shutdown")
+		}()
 		for _, ch := range s.ChannelMap.All() {
 			ch.Close()
 
@@ -138,6 +148,15 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 
 	return nil
+}
+
+func (s *Server) Push(id string, data []byte) error {
+	ch, ok := s.ChannelMap.Get(id)
+	if !ok {
+		return fmt.Errorf("channel %s no found", id)
+	}
+
+	return ch.Push(data)
 }
 
 func (s *Server) SetAcceptor(acceptor kim.Acceptor) {

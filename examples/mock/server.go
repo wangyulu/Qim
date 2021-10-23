@@ -6,6 +6,7 @@ import (
 
 	"jinv/kim"
 	"jinv/kim/logger"
+	"jinv/kim/naming"
 	"jinv/kim/tcp"
 	"jinv/kim/websocket"
 )
@@ -16,10 +17,15 @@ type ServerDemo struct {
 func (s *ServerDemo) Start(id, protocol, addr string) {
 	var srv kim.Server
 
+	service := &naming.DefaultService{
+		Id:       id,
+		Protocol: protocol,
+	}
+
 	if protocol == "ws" {
-		srv = websocket.NewServer(addr)
+		srv = websocket.NewServer(addr, service)
 	} else if protocol == "tcp" {
-		srv = tcp.NewServer(addr)
+		srv = tcp.NewServer(addr, service)
 	}
 
 	handler := &ServerHandler{}

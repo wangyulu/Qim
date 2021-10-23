@@ -30,13 +30,17 @@ type Client struct {
 	conn    net.Conn
 	state   int32
 	options ClientOptions
+	Meta    map[string]string
 }
 
 func NewClient(id, name string, opts ClientOptions) kim.Client {
+	return NewClientWithProps(id, name, make(map[string]string), opts)
+}
+
+func NewClientWithProps(id, name string, meta map[string]string, opts ClientOptions) kim.Client {
 	if opts.WriteWait == 0 {
 		opts.WriteWait = kim.DefaultWriteWait
 	}
-
 	if opts.ReadWait == 0 {
 		opts.ReadWait = kim.DefaultReadWait
 	}
@@ -45,8 +49,8 @@ func NewClient(id, name string, opts ClientOptions) kim.Client {
 		id:      id,
 		name:    name,
 		options: opts,
+		Meta:    meta,
 	}
-
 	return cli
 }
 
@@ -84,7 +88,7 @@ func (c *Client) Connect(addr string) error {
 		go func() {
 			err := c.hearbeatLoop(conn)
 			if err != nil {
-				logger.Error("hearbeatLoop stopped", err)
+				logger.Error("heartbeatLoop stopped", err)
 			}
 		}()
 	}
@@ -123,7 +127,7 @@ func (c *Client) Read() (kim.Frame, error) {
 func (c *Client) Send(payload []byte) error {
 	// 判断客户端是否已经启动
 	if atomic.LoadInt32(&c.state) == 0 {
-		return errors.New("connnection is nil")
+		return errors.New("connection is nil")
 	}
 
 	// todo 这里为什么也加锁了
@@ -190,4 +194,16 @@ func (c *Client) ping(conn net.Conn) error {
 	logger.Tracef("%s send ping to server", c.id)
 
 	return wsutil.WriteClientMessage(conn, ws.OpPing, nil)
+}
+
+func (c *Client) ServiceID() string {
+	return c.id
+}
+
+func (c *Client) ServiceName() string {
+	return c.name
+}
+
+func (c *Client) GetMeta() map[string]string {
+	return c.Meta
 }

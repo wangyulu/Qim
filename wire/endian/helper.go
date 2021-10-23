@@ -107,3 +107,39 @@ func WriteBytes(w io.Writer, buf []byte) error {
 
 	return nil
 }
+
+func WriteShortBytes(w io.Writer, buf []byte) error {
+	bufLen := len(buf)
+
+	if err := WriteUint16(w, uint16(bufLen)); err != nil {
+		return err
+	}
+
+	_, err := w.Write(buf)
+
+	return err
+}
+
+func ReadShortBytes(r io.Reader) ([]byte, error) {
+	bufLen, err := ReadUint16(r)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, bufLen)
+
+	if _, err := io.ReadFull(r, buf); err != nil {
+		return nil, err
+	}
+
+	return buf, err
+}
+
+func ReadShortString(r io.Reader) (string, error) {
+	buf, err := ReadShortBytes(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(buf), nil
+}
