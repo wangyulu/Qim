@@ -11,8 +11,9 @@ import (
 var ErrSessionLost = errors.New("err:session lost")
 
 type Router struct {
-	handlers *FuncTree
-	pool     sync.Pool
+	middlewares []HandlerFunc
+	handlers    *FuncTree
+	pool        sync.Pool
 }
 
 func NewRouter() *Router {
@@ -27,7 +28,12 @@ func NewRouter() *Router {
 	return r
 }
 
+func (r *Router) Use(handlers ...HandlerFunc) {
+	r.middlewares = append(r.middlewares, handlers...)
+}
+
 func (r *Router) Handle(command string, handlers ...HandlerFunc) {
+	r.handlers.Add(command, r.middlewares...)
 	r.handlers.Add(command, handlers...)
 }
 

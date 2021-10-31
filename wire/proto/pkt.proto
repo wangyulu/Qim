@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pkt;
+
+option go_package = "jinv/kim/wire;pkt";
+
+message DemoPkt {
+    uint32 Source = 1;
+    uint64 Sequence = 2;
+    bytes Data = 3;
+}
+
+// P.s 在kim根目录下执行 protoc --proto_path=wire/proto --go_out=wire/pkt --go_opt=paths=source_relative wire/proto/pkt.proto

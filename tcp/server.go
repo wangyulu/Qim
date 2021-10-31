@@ -53,6 +53,7 @@ func (s *Server) Start() error {
 	log := logger.WithFields(logger.Fields{
 		"module": "tcp.server",
 		"listen": s.listen,
+		"id":     s.ServiceID(),
 	})
 
 	if s.StateListener == nil {

@@ -30,6 +30,7 @@ type Context interface {
 	RespWithError(status pkt.Status, err error) error
 	Resp(status pkt.Status, body proto.Message) error
 	Dispatch(body proto.Message, recvs ...*Location) error
+	Next()
 }
 
 type HandlerFunc func(Context)
@@ -59,9 +60,9 @@ func (c *ContextImpl) Next() {
 
 	f := c.handlers[c.index]
 
-	f(c)
-
 	c.index++
+
+	f(c)
 }
 
 func (c *ContextImpl) RespWithError(status pkt.Status, err error) error {

@@ -1,13 +1,16 @@
 package conf
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v7"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/viper"
+	"jinv/kim"
 	"jinv/kim/logger"
 )
 
@@ -20,7 +23,14 @@ type Config struct {
 	Tags          []string `evnconfig:"tags"`
 	ConsulURL     string   `envconfig:"consulURL"`
 	RedisAddrs    string   `envconfig:"redisAddrs"`
-	RpcURL        string   `envconfig:"rpcURL"`
+	RoyalURL      string   `envconfig:"royalURL"`
+	LogLevel      string   `envconfig:"logLevel",default:"INFO"`
+}
+
+func (c Config) Stirng() string {
+	bts, _ := json.Marshal(c)
+
+	return string(bts)
 }
 
 func Init(file string) (*Config, error) {
@@ -28,18 +38,26 @@ func Init(file string) (*Config, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/conf")
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("config file not found: %s", err)
-	}
-
 	var config Config
+	if err := viper.ReadInConfig(); err != nil {
+		logger.Warn(err)
+	} else {
+		if err := viper.Unmarshal(&config); err != nil {
+			return nil, err
+		}
+	}
 
-	if err := viper.Unmarshal(&config); err != nil {
+	if err := envconfig.Process("kim", &config); err != nil {
 		return nil, err
 	}
 
-	if err := envconfig.Process("", &config); err != nil {
-		return nil, err
+	if config.ServiceID == "" {
+		localIP := kim.GetLocalIP()
+		config.ServiceID = fmt.Sprintf("server_%s", strings.ReplaceAll(localIP, ".", ""))
+	}
+
+	if config.PublicAddress == "" {
+		config.PublicAddress = kim.GetLocalIP()
 	}
 
 	logger.Info(config)

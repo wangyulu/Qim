@@ -31,7 +31,7 @@ func (r *RedisStorage) Add(session *pkt.Session) error {
 		GateId:    session.GateId,
 	}
 
-	locKey := KeyLocation(session.Account, "")
+	locKey := KeyLocation(session.Account, "") // todo
 	if err := r.cli.Set(locKey, loc.Bytes(), LocationExpired).Err(); err != nil {
 		return err
 	}

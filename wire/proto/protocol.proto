@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pkt;
 
-// option go_package = "./pkt";
+option go_package = "./pkt";
 
 message LoginReq {
     string token = 1;
@@ -129,7 +129,7 @@ message MessageIndex {
     int64 message_id = 1;
     int32 direction = 2;
     int64 send_time = 3;
-    int64 accountB = 4;
+    string accountB = 4;
     string group = 5;
 }
 
@@ -147,3 +147,5 @@ message MessageContent {
 message MessageContentResp {
     repeated MessageContent contents = 1;
 }
+
+// P.s 在wire根目录下执行 protoc --proto_path=proto --go_out=pkt --go_opt=paths=source_relative proto/*.proto

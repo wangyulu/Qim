@@ -8,6 +8,7 @@ import (
 	"jinv/kim/logger"
 	"jinv/kim/services/gateway"
 	"jinv/kim/services/server"
+	"jinv/kim/services/service"
 )
 
 const version = "v1"
@@ -25,6 +26,7 @@ func main() {
 
 	root.AddCommand(gateway.NewServerStartCmd(ctx, version))
 	root.AddCommand(server.NewServerStartCmd(ctx, version))
+	root.AddCommand(service.NewServerStartCMD(ctx, version))
 
 	if err := root.Execute(); err != nil {
 		logger.WithError(err).Fatal("Could not run command")

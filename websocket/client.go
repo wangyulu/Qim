@@ -86,7 +86,7 @@ func (c *Client) Connect(addr string) error {
 	// 2. 如果有设置心跳时间，则进行心跳检测
 	if c.options.Heartbeat > 0 {
 		go func() {
-			err := c.hearbeatLoop(conn)
+			err := c.heartbeatLoop(conn)
 			if err != nil {
 				logger.Error("heartbeatLoop stopped", err)
 			}
@@ -169,7 +169,7 @@ func (c *Client) Name() string {
 	return c.name
 }
 
-func (c *Client) hearbeatLoop(conn net.Conn) error {
+func (c *Client) heartbeatLoop(conn net.Conn) error {
 	tick := time.NewTicker(c.options.Heartbeat)
 	for range tick.C {
 		if err := c.ping(conn); err != nil {

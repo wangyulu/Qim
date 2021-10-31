@@ -92,9 +92,9 @@ func (ch *ChannelImpl) ReadLoop(lst MessageListener) error {
 	defer ch.Unlock()
 
 	log := logger.WithFields(logger.Fields{
-		"stuct": "ChannelImpl",
-		"func":  "ReadLoop",
-		"id":    ch.id,
+		"struct": "ChannelImpl",
+		"func":   "ReadLoop",
+		"id":     ch.id,
 	})
 
 	for {
