@@ -17,6 +17,7 @@ import (
 )
 
 type ClientDialer struct {
+	AppSecret string
 }
 
 func (d *ClientDialer) DialAndHandshake(ctx kim.DialerContext) (net.Conn, error) {
@@ -28,8 +29,12 @@ func (d *ClientDialer) DialAndHandshake(ctx kim.DialerContext) (net.Conn, error)
 		return nil, err
 	}
 
+	if d.AppSecret == "" {
+		d.AppSecret = token.DefaultSecret
+	}
+
 	// 2. 直接使用JWT生成一个Token
-	tk, err := token.Generate(token.DefaultSecret, &token.Token{
+	tk, err := token.Generate(d.AppSecret, &token.Token{
 		Account: ctx.Id,
 		App:     "kim",
 		Exp:     time.Now().AddDate(0, 0, 1).Unix(),

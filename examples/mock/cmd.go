@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -13,7 +14,7 @@ type StartOptions struct {
 	addr     string
 }
 
-func NewClientCmd() *cobra.Command {
+func NewClientCmd(ctx context.Context) *cobra.Command {
 	opts := StartOptions{}
 
 	cmd := &cobra.Command{
@@ -38,7 +39,7 @@ func NewClientCmd() *cobra.Command {
 	return cmd
 }
 
-func NewServerCmd() *cobra.Command {
+func NewServerCmd(ctx context.Context) *cobra.Command {
 	opts := StartOptions{}
 
 	cmd := &cobra.Command{
