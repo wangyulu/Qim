@@ -70,9 +70,7 @@ func (h *ServerHandler) Accept(conn kim.Conn, timeout time.Duration) (string, er
 }
 
 func (h *ServerHandler) Receive(ag kim.Agent, payload []byte) {
-	ack := string(payload) + " from server"
-
-	_ = ag.Push([]byte(ack))
+	_ = ag.Push([]byte("ok"))
 }
 
 func (h *ServerHandler) Disconnect(id string) error {

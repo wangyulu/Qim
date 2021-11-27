@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"bufio"
 	"net"
 
 	"github.com/gobwas/ws"
@@ -18,13 +19,13 @@ func (u *Upgrader) Name() string {
 	return "websocket.server"
 }
 
-func (u *Upgrader) Upgrade(rawconn net.Conn) (kim.Conn, error) {
+func (u *Upgrader) Upgrade(rawconn net.Conn, rd *bufio.Reader, wr *bufio.Writer) (kim.Conn, error) {
 	_, err := ws.Upgrade(rawconn)
 	if err != nil {
 		return nil, err
 	}
 
-	conn := NewConn(rawconn)
+	conn := NewConnWithRW(rawconn, rd, wr)
 
 	return conn, nil
 }

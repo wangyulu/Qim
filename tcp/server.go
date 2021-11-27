@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"bufio"
 	"net"
 
 	"jinv/kim"
@@ -17,8 +18,8 @@ func (u *Upgrader) Name() string {
 	return "tcp.server"
 }
 
-func (u *Upgrader) Upgrade(rawconn net.Conn) (kim.Conn, error) {
-	conn := NewConn(rawconn)
+func (u *Upgrader) Upgrade(rawconn net.Conn, rd *bufio.Reader, wr *bufio.Writer) (kim.Conn, error) {
+	conn := NewConnWithRW(rawconn, rd, wr)
 
 	return conn, nil
 }

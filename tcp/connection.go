@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"bufio"
 	"io"
 	"net"
 
@@ -31,21 +32,33 @@ func (f *Frame) GetPayload() []byte {
 
 type TcpConn struct {
 	net.Conn
+	rd *bufio.Reader
+	wr *bufio.Writer
 }
 
 func NewConn(conn net.Conn) *TcpConn {
 	return &TcpConn{
 		Conn: conn,
+		rd:   bufio.NewReaderSize(conn, 4096), // 创建一个大小为4KB的读缓冲 todo 应该要可以配置吧
+		wr:   bufio.NewWriterSize(conn, 1024), // 创建一个大小为1KB的写缓冲
+	}
+}
+
+func NewConnWithRW(conn net.Conn, rd *bufio.Reader, wr *bufio.Writer) *TcpConn {
+	return &TcpConn{
+		Conn: conn,
+		rd:   rd,
+		wr:   wr,
 	}
 }
 
 func (c *TcpConn) ReadFrame() (kim.Frame, error) {
-	opcode, err := endian.ReadUint8(c.Conn)
+	opcode, err := endian.ReadUint8(c.rd)
 	if err != nil {
 		return nil, err
 	}
 
-	payload, err := endian.ReadBytes(c.Conn)
+	payload, err := endian.ReadBytes(c.rd)
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +70,11 @@ func (c *TcpConn) ReadFrame() (kim.Frame, error) {
 }
 
 func (c *TcpConn) WriteFrame(code kim.OpCode, payload []byte) error {
-	return WriteFrame(c.Conn, code, payload)
+	return WriteFrame(c.wr, code, payload)
 }
 
 func (c *TcpConn) Flush() error {
-	return nil
+	return c.wr.Flush()
 }
 
 func WriteFrame(w io.Writer, code kim.OpCode, payload []byte) error {

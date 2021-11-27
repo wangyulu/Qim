@@ -2,6 +2,7 @@ package benchmark
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -60,4 +61,52 @@ func Test_Parallel(t *testing.T) {
 	}
 
 	t.Logf("closed")
+}
+
+func Test_Message(t *testing.T) {
+	const count = 1000 * 100
+
+	cli := websocket.NewClient(fmt.Sprintf("test_%v", 1), "client", websocket.ClientOptions{
+		Heartbeat: kim.DefaultHeartbeat,
+	})
+
+	cli.SetDialer(&mock.WebsocketDialer{})
+
+	err := cli.Connect(wsurl)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	// 消息内容50个字符，不可超过缓冲区大小（不然会绕过缓冲区）
+	msg := []byte(strings.Repeat("hello", 10))
+
+	t0 := time.Now()
+
+	go func() {
+		for i := 0; i < count; i++ {
+			_ = cli.Send(msg)
+		}
+	}()
+
+	recv := 0
+
+	for {
+		frame, err := cli.Read()
+		if err != nil {
+			logger.Info("time", time.Now().UnixNano(), err)
+			break
+		}
+
+		if frame.GetOpCode() != kim.OpBinary {
+			continue
+		}
+
+		recv++
+
+		if recv == count {
+			break
+		}
+	}
+
+	t.Logf("message %d cost %v", count, time.Since(t0))
 }

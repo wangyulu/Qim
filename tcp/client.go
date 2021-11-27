@@ -104,10 +104,11 @@ func (c *Client) Close() {
 		// 平滑关闭与服务端的连接（四次挥手？）
 		// 在关闭客户端连接之前，先通知服务端，然后在进行关闭
 
-		// c.conn.WriteFrame(kim.OpClose, nil) todo 为什么没有使用 kim.Conn中的WriteFrame
-		WriteFrame(c.conn, kim.OpClose, nil)
+		_ = c.conn.WriteFrame(kim.OpClose, nil) // todo 为什么没有使用 kim.Conn中的WriteFrame
 
-		c.conn.Close()
+		_ = c.conn.Flush()
+
+		_ = c.conn.Close()
 
 		atomic.CompareAndSwapInt32(&c.state, 1, 0)
 	})
@@ -154,7 +155,12 @@ func (c *Client) Send(payload []byte) error {
 		}
 	}
 
-	return c.conn.WriteFrame(kim.OpBinary, payload)
+	err := c.conn.WriteFrame(kim.OpBinary, payload)
+	if err != nil {
+		return err
+	}
+
+	return c.conn.Flush()
 }
 
 func (c *Client) ID() string {
@@ -186,7 +192,12 @@ func (c *Client) ping() error {
 		}
 	}
 
-	return c.conn.WriteFrame(kim.OpPing, nil)
+	err := c.conn.WriteFrame(kim.OpPing, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.conn.Flush()
 }
 
 func (c *Client) ServiceID() string {

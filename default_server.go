@@ -1,19 +1,21 @@
 package kim
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"net"
 	"sync"
 	"time"
 
+	"github.com/gobwas/ws"
 	"github.com/segmentio/ksuid"
 	"jinv/kim/logger"
 )
 
 type Upgrader interface {
 	Name() string
-	Upgrade(rawconn net.Conn) (Conn, error)
+	Upgrade(rawconn net.Conn, rd *bufio.Reader, wr *bufio.Writer) (Conn, error)
 }
 
 type ServerOptions struct {
@@ -94,7 +96,10 @@ func (s *DefaultServer) Start() error {
 		}
 
 		go func(rawconn net.Conn) {
-			conn, err := s.Upgrade(rawconn)
+			rd := bufio.NewReaderSize(rawconn, ws.DefaultServerReadBufferSize) // todo 应该要配置吧
+			wr := bufio.NewWriterSize(rawconn, ws.DefaultServerWriteBufferSize)
+
+			conn, err := s.Upgrade(rawconn, rd, wr)
 			if err != nil {
 				logger.Errorf("Upgrade error: %v", err)
 				_ = rawconn.Close()
