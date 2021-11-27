@@ -2,6 +2,8 @@ package mock
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"time"
 
 	"jinv/kim"
@@ -9,12 +11,18 @@ import (
 	"jinv/kim/naming"
 	"jinv/kim/tcp"
 	"jinv/kim/websocket"
+
+	_ "net/http/pprof"
 )
 
 type ServerDemo struct {
 }
 
 func (s *ServerDemo) Start(id, protocol, addr string) {
+	go func() {
+		fmt.Println(http.ListenAndServe(":6060", nil))
+	}()
+
 	var srv kim.Server
 
 	service := &naming.DefaultService{

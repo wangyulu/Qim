@@ -39,6 +39,11 @@ func Error(args ...interface{}) {
 	std.Error(args...)
 }
 
+// Errorf logs a message at level Error on the standard logger.
+func Errorf(format string, args ...interface{}) {
+	std.Errorf(format, args...)
+}
+
 // Info logs a message at level Info on the standard logger.
 func Info(args ...interface{}) {
 	std.Info(args...)
