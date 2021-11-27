@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/go-resty/resty/v2 v2.6.0
+	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-querystring v1.1.0 // indirect

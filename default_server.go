@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gobwas/pool/pbufio"
 	"github.com/gobwas/ws"
 	"github.com/segmentio/ksuid"
 	"jinv/kim/logger"
@@ -96,8 +97,12 @@ func (s *DefaultServer) Start() error {
 		}
 
 		go func(rawconn net.Conn) {
-			rd := bufio.NewReaderSize(rawconn, ws.DefaultServerReadBufferSize) // todo 应该要配置吧
-			wr := bufio.NewWriterSize(rawconn, ws.DefaultServerWriteBufferSize)
+			rd := pbufio.GetReader(rawconn, ws.DefaultServerReadBufferSize) // todo 应该要配置吧
+			wr := pbufio.GetWriter(rawconn, ws.DefaultServerWriteBufferSize)
+			defer func() {
+				pbufio.PutReader(rd)
+				pbufio.PutWriter(wr)
+			}()
 
 			conn, err := s.Upgrade(rawconn, rd, wr)
 			if err != nil {
