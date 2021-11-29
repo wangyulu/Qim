@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	gocluster "github.com/chasex/redis-go-cluster"
 	"github.com/go-redis/redis/v7"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/viper"
@@ -15,16 +16,17 @@ import (
 )
 
 type Config struct {
-	ServiceID     string   `envconfig:"serviceId"`
-	Namespace     string   `envconfig:"namespace"`
-	Listen        string   `envconfig:"listen"`
-	PublicAddress string   `envconfig:"publicAddress"`
-	PublicPort    int      `envconfig:"publicPort"`
-	Tags          []string `evnconfig:"tags"`
-	ConsulURL     string   `envconfig:"consulURL"`
-	RedisAddrs    string   `envconfig:"redisAddrs"`
-	RoyalURL      string   `envconfig:"royalURL"`
-	LogLevel      string   `envconfig:"logLevel",default:"INFO"`
+	ServiceID         string   `envconfig:"serviceId"`
+	Namespace         string   `envconfig:"namespace"`
+	Listen            string   `envconfig:"listen"`
+	PublicAddress     string   `envconfig:"publicAddress"`
+	PublicPort        int      `envconfig:"publicPort"`
+	Tags              []string `evnconfig:"tags"`
+	ConsulURL         string   `envconfig:"consulURL"`
+	RedisAddrs        string   `envconfig:"redisAddrs"`
+	RedisClusterAddrs []string `envconfig:"redisClusterAddrs"`
+	RoyalURL          string   `envconfig:"royalURL"`
+	LogLevel          string   `envconfig:"logLevel",default:"INFO"`
 }
 
 func (c Config) Stirng() string {
@@ -80,4 +82,41 @@ func InitRedis(addr string, pass string) (*redis.Client, error) {
 	}
 
 	return redisDb, nil
+}
+
+func InitRedisCluster(addrs []string, pass string) (*gocluster.Cluster, error) {
+	cluster, err := gocluster.NewCluster(
+		&gocluster.Options{
+			StartNodes:   addrs,
+			ConnTimeout:  50 * time.Millisecond,
+			ReadTimeout:  50 * time.Millisecond,
+			WriteTimeout: 50 * time.Millisecond,
+			KeepAlive:    16,
+			AliveTime:    60 * time.Second,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cluster, nil
+}
+
+func InitRedisClusterV2(addrs []string, pass string) (*redis.ClusterClient, error) {
+	cluster := redis.NewClusterClient(
+		&redis.ClusterOptions{
+			Addrs:        addrs,
+			DialTimeout:  time.Second * 5,
+			ReadTimeout:  time.Second * 5,
+			WriteTimeout: time.Second * 5,
+		},
+	)
+
+	if _, err := cluster.Ping().Result(); err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return cluster, nil
 }

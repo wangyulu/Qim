@@ -97,12 +97,12 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 	r.Handle(wire.CommandOfflineContext, offlineHandler.DoSyncContent)
 
 	// 3. 会话存储
-	rdb, err := conf.InitRedis(config.RedisAddrs, "")
+	rdb, err := conf.InitRedisClusterV2(config.RedisClusterAddrs, "")
 	if err != nil {
 		return err
 	}
 
-	cache := storage.NewRedisStorage(rdb)
+	cache := storage.NewRedisClusterStorageV2(rdb)
 
 	servHandler := serv.NewServHandler(r, cache)
 

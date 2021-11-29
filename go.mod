@@ -5,8 +5,10 @@ go 1.14
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/chasex/redis-go-cluster v1.0.1-0.20161207023922-222d81891f1d // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
+	github.com/gitstliu/go-redis-cluster v0.0.0-20190226073442-d274d87c0bfa // indirect
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/go-resty/resty/v2 v2.6.0

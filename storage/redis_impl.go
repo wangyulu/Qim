@@ -144,3 +144,13 @@ func KeyLocations(accounts ...string) []string {
 
 	return arr
 }
+
+func KeyLocationsBytes(accounts ...string) []interface{} {
+	arr := make([]interface{}, len(accounts))
+
+	for i, account := range accounts {
+		arr[i] = []byte(KeyLocation(account, ""))
+	}
+
+	return arr
+}
