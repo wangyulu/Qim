@@ -1,0 +1,3 @@
+Listen: :8081
+ConsulURL: localhost:8500
+LogLevel: trace

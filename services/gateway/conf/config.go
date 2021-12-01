@@ -17,6 +17,8 @@ type Config struct {
 	PublicPort    int      `envconfig:"publicPort"`
 	Tags          []string `envconfig:"tags"`
 	ConsulURL     string   `envconfig:"consulURL"`
+	LogLevel      string   `envconfig:"logLevel",default:"trace"`
+	Domain        string   `envconfig:"domain"`
 }
 
 func Init(file string) (*Config, error) {

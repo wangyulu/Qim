@@ -26,7 +26,7 @@ type Config struct {
 	RedisAddrs        string   `envconfig:"redisAddrs"`
 	RedisClusterAddrs []string `envconfig:"redisClusterAddrs"`
 	RoyalURL          string   `envconfig:"royalURL"`
-	LogLevel          string   `envconfig:"logLevel",default:"INFO"`
+	LogLevel          string   `envconfig:"logLevel",default:"trace"`
 }
 
 func (c Config) Stirng() string {

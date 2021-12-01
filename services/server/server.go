@@ -50,7 +50,10 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 		return err
 	}
 
-	_ = logger.Init(logger.Settings{Level: "trace"})
+	_ = logger.Init(logger.Settings{
+		Level:    config.LogLevel,
+		Filename: "./data/server.log",
+	})
 
 	var groupService service.Group
 	var messageService service.Message

@@ -44,7 +44,13 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 		return err
 	}
 
-	_ = logger.Init(logger.Settings{Level: "trace"})
+	_ = logger.Init(logger.Settings{
+		Level:    config.LogLevel,
+		Filename: "./data/gateway.log",
+	})
+
+	meta := make(map[string]string)
+	meta["domain"] = config.Domain
 
 	handler := &serv.Handler{
 		ServiceID: config.ServiceID,
@@ -59,6 +65,7 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 		Port:     config.PublicPort,
 		Protocol: opts.protocol,
 		Tags:     config.Tags,
+		Meta:     meta,
 	}
 
 	if opts.protocol == "ws" {

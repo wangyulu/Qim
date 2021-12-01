@@ -4,5 +4,6 @@ Listen: ":8000"
 PublicAddress: localhost
 PublicPort: 8000
 Tags:
-  - gate
+  - IDC:SH_ALI
 ConsulURL: localhost:8500
+Domain: ws://sh.kimclould.com

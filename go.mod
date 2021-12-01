@@ -24,6 +24,7 @@ require (
 	github.com/klintcheng/chatdemo v0.0.0-20210809014858-f1bc9333b64b // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.5 // indirect
+	github.com/lionsoul2014/ip2region v2.2.0-release+incompatible // indirect
 	github.com/magiconair/properties v1.8.5
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/panjf2000/ants/v2 v2.4.6 // indirect

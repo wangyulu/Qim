@@ -1,0 +1,12 @@
+time="2021-11-30T15:43:48+08:00" level=info msg="srv gate01:wgateway - deps map[chat:{}]" func=Init module=container
+time="2021-11-30T15:43:48+08:00" level=info msg=started.. func=Start id=gate01 listen=":8000" module=websocket.server
+time="2021-11-30T15:43:48+08:00" level=debug msg="load service: [], meta: &{12  0s true 4.086279ms false false 0s }"
+time="2021-11-30T15:43:48+08:00" level=debug msg="load service: [], meta: &{12  0s true 4.032699ms false false 0s }"
+time="2021-11-30T15:43:48+08:00" level=info msg="find service []" module=container
+time="2021-11-30T15:44:29+08:00" level=info msg="srv gate02:wgateway - deps map[chat:{}]" func=Init module=container
+time="2021-11-30T15:44:29+08:00" level=info msg=started.. func=Start id=gate02 listen=":8008" module=websocket.server
+time="2021-11-30T15:44:29+08:00" level=debug msg="load service: [], meta: &{12  0s true 2.926297ms false true 0s }"
+time="2021-11-30T15:44:29+08:00" level=debug msg="load service: [], meta: &{12  0s true 3.176941ms false true 0s }"
+time="2021-11-30T15:44:29+08:00" level=info msg="find service []" module=container
+time="2021-11-30T15:54:14+08:00" level=debug msg="load service: [], meta: &{39  0s true 9m45.02438851s false false 0s }"
+time="2021-11-30T15:54:14+08:00" level=debug msg="load service: [], meta: &{39  0s true 10m26.106090504s false false 0s }"

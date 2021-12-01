@@ -1,0 +1,8 @@
+time="2021-11-30T15:52:56+08:00" level=info msg="load mappings - map[中国:EC 华盛顿:US 日本:JP 洛杉矶:US 韩国:JP]"
+time="2021-11-30T15:52:56+08:00" level=info msg="load regions - map[EC:0xc0001e7a40 JP:0xc0001e7ac0]"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate02,Name:wgateway,Address:localhost,Port:8008,Ns:,Tags:[IDC:HZ_ALI],Meta:map[domain:ws://hz.kimclould.com protocol:ws]], meta: &{39  0s true 2.260118ms false false 0s }"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate01,Name:wgateway,Address:localhost,Port:8000,Ns:,Tags:[IDC:SH_ALI],Meta:map[domain:ws://sh.kimclould.com protocol:ws]], meta: &{39  0s true 623.288µs false false 0s }"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate02,Name:wgateway,Address:localhost,Port:8008,Ns:,Tags:[IDC:HZ_ALI],Meta:map[domain:ws://hz.kimclould.com protocol:ws]], meta: &{39  0s true 746.085µs false true 0s }"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate02,Name:wgateway,Address:localhost,Port:8008,Ns:,Tags:[IDC:HZ_ALI],Meta:map[domain:ws://hz.kimclould.com protocol:ws]], meta: &{39  0s true 498.452µs false true 0s }"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate02,Name:wgateway,Address:localhost,Port:8008,Ns:,Tags:[IDC:HZ_ALI],Meta:map[domain:ws://hz.kimclould.com protocol:ws]], meta: &{39  0s true 333.679µs false true 0s }"
+time="2021-11-30T15:54:04+08:00" level=debug msg="load service: [Id:gate01,Name:wgateway,Address:localhost,Port:8000,Ns:,Tags:[IDC:SH_ALI],Meta:map[domain:ws://sh.kimclould.com protocol:ws]], meta: &{39  0s true 289.108µs false true 0s }"

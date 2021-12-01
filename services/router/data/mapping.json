@@ -1,0 +1,22 @@
+[
+  {
+    "region": "EC",
+    "locations": [
+      "中国"
+    ]
+  },
+  {
+    "region": "JP",
+    "locations": [
+      "日本",
+      "韩国"
+    ]
+  },
+  {
+    "region": "US",
+    "locations": [
+      "洛杉矶",
+      "华盛顿"
+    ]
+  }
+]

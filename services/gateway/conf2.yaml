@@ -1,0 +1,9 @@
+ServiceID: gate02
+ServiceName: wgateway
+Listen: ":8008"
+PublicAddress: localhost
+PublicPort: 8008
+Tags:
+  - IDC:HZ_ALI
+ConsulURL: localhost:8500
+Domain: ws://hz.kimclould.com

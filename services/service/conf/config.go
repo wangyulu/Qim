@@ -94,7 +94,7 @@ func InitRedis(addr string, pass string) (*redis.Client, error) {
 
 func MakeAccessLog() *accesslog.AccessLog {
 	// Initialize a new access log middleware.
-	ac := accesslog.File("./access.log")
+	ac := accesslog.File("./data/access.log")
 	// Remove this line to disable logging to console:
 	ac.AddOutput(os.Stdout)
 

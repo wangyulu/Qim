@@ -1,0 +1,24 @@
+[
+  {
+    "id": "EC",
+    "idcs": [
+      {
+        "id": "SH_ALI",
+        "weight": 100
+      },
+      {
+        "id": "HZ_ALI",
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "id": "JP",
+    "idcs": [
+      {
+        "id": "DB_ALI",
+        "weight": 100
+      }
+    ]
+  }
+]
