@@ -1,8 +1,8 @@
-ServiceID: chat01
-Listen: ":8005"
+ServiceID: chat03
+Listen: ":8025"
 PublicAddress: localhost
-PublicPort: 8005
-Zone: zone_ali_01
+PublicPort: 8025
+Zone: zone_ali_02
 Tags:
   - server
 ConsulURL: localhost:8500

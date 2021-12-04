@@ -14,13 +14,18 @@ import (
 	"jinv/kim/wire/token"
 )
 
+const (
+	MetaKeyApp     = "app"
+	MetaKeyAccount = "account"
+)
+
 var log = logger.WithFields(logger.Fields{"service": "gateway", "pkg": "serv"})
 
 type Handler struct {
 	ServiceID string
 }
 
-func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
+func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, kim.Meta, error) {
 	log := logger.WithFields(logger.Fields{
 		"ServiceID": h.ServiceID,
 		"module":    "Handler",
@@ -31,18 +36,18 @@ func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
 
 	// 1. 读取登录包
 	if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	frame, err := conn.ReadFrame()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	buf := bytes.NewBuffer(frame.GetPayload())
 	req, err := pkt.MustReadLogicPkt(buf)
 	if err != nil {
-		return "", nil
+		return "", nil, nil
 	}
 
 	// 2. 必须是登录包
@@ -52,13 +57,13 @@ func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
 
 		_ = conn.WriteFrame(kim.OpBinary, pkt.Marshal(resp))
 
-		return "", fmt.Errorf("must be a InvalidCommand command")
+		return "", nil, fmt.Errorf("must be a InvalidCommand command")
 	}
 
 	// 3. 反序列化Body
 	var login pkt.LoginReq
 	if err = req.ReadBody(&login); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// 4. 使用默认的DefaultSecret解析Token
@@ -70,7 +75,7 @@ func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
 
 		_ = conn.WriteFrame(kim.OpBinary, pkt.Marshal(resp))
 
-		return "", err
+		return "", nil, err
 	}
 
 	// 6. 生成一个全局唯一的ChannelID
@@ -84,13 +89,15 @@ func (h *Handler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
 		App:       tk.App,
 		RemoteIP:  getIP(conn.RemoteAddr().String()),
 	})
+	req.AddStringMeta(MetaKeyApp, tk.App)
+	req.AddStringMeta(MetaKeyAccount, tk.Account)
 
 	// 7. 把login转发给Login服务
 	if err := container.Forward(wire.SNLogin, req); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return id, nil
+	return id, kim.Meta{MetaKeyApp: tk.App, MetaKeyAccount: tk.Account}, nil
 }
 
 func (h *Handler) Receive(agent kim.Agent, payload []byte) {
@@ -114,6 +121,11 @@ func (h *Handler) Receive(agent kim.Agent, payload []byte) {
 	if logicPkt, ok := packet.(*pkt.LogicPkt); ok {
 		logicPkt.ChannelId = agent.ID()
 
+		if agent.GetMeta() != nil {
+			logicPkt.AddStringMeta(MetaKeyApp, agent.GetMeta()[MetaKeyApp])
+			logicPkt.AddStringMeta(MetaKeyAccount, agent.GetMeta()[MetaKeyAccount])
+		}
+
 		err := container.Forward(logicPkt.ServiceName(), logicPkt)
 		if err != nil {
 			logger.WithFields(logger.Fields{
@@ -126,14 +138,20 @@ func (h *Handler) Receive(agent kim.Agent, payload []byte) {
 	}
 }
 
-func (h *Handler) Disconnect(id string) error {
-	log.Infof("disconnect %s", id)
+func (h *Handler) Disconnect(agent kim.Agent) error {
+	log.Infof("disconnect %s", agent.ID())
 
-	logout := pkt.New(wire.CommandLoginSignOut, pkt.WithChannel(id))
+	logout := pkt.New(wire.CommandLoginSignOut, pkt.WithChannel(agent.ID()))
+
+	if agent.GetMeta() != nil {
+		logout.AddStringMeta(MetaKeyApp, agent.GetMeta()[MetaKeyApp])
+		logout.AddStringMeta(MetaKeyAccount, agent.GetMeta()[MetaKeyAccount])
+	}
+
 	if err := container.Forward(wire.SNLogin, logout); err != nil {
 		logger.WithFields(logger.Fields{
 			"module": "handler",
-			"id":     id,
+			"id":     agent.ID(),
 		}).Error(err)
 	}
 

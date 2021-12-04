@@ -54,7 +54,10 @@ func (d *ClientDialer) DialAndHandshake(ctx kim.DialerContext) (net.Conn, error)
 
 	logger.Info("waiting for login response")
 
-	_ = conn.SetReadDeadline(time.Now().Add(ctx.Timeout))
+	err = conn.SetReadDeadline(time.Now().Add(ctx.Timeout))
+	if err != nil {
+		return nil, err
+	}
 
 	frame, err := ws.ReadFrame(conn)
 	if err != nil {

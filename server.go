@@ -50,21 +50,24 @@ type Server interface {
 }
 
 type Acceptor interface {
-	Accept(Conn, time.Duration) (string, error)
+	Accept(Conn, time.Duration) (string, Meta, error)
 }
 
 type StateListener interface {
-	Disconnect(string) error
+	Disconnect(Agent) error
 }
 
 type MessageListener interface {
 	Receive(Agent, []byte)
 }
 
+type Meta map[string]string
+
 // 发送方
 type Agent interface {
 	ID() string
 	Push([]byte) error
+	GetMeta() Meta
 }
 
 type OpCode byte

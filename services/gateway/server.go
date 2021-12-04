@@ -90,5 +90,14 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 
 	container.SetDialer(serv.NewDialer(config.ServiceID))
 
+	route, err := conf.ReadRoute("./gateway/route.json")
+	if err != nil {
+		return err
+	}
+
+	routeSelector := serv.NewRouteSelector(route)
+
+	container.SetSelector(routeSelector)
+
 	return container.Start()
 }

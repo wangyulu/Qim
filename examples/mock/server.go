@@ -51,11 +51,11 @@ func (s *ServerDemo) Start(id, protocol, addr string) {
 
 type ServerHandler struct{}
 
-func (h *ServerHandler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
+func (h *ServerHandler) Accept(conn kim.Conn, timeout time.Duration) (string, kim.Meta, error) {
 	// 1. 读取：客户端发送的鉴权数据包
 	frame, err := conn.ReadFrame()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// 2. 解析：数据包内容就是userId
@@ -63,18 +63,18 @@ func (h *ServerHandler) Accept(conn kim.Conn, timeout time.Duration) (string, er
 
 	// 3. 鉴权：这里只是为了示例做一个fake验证，非空
 	if userId == "" {
-		return "", errors.New("user id is invalid")
+		return "", nil, errors.New("user id is invalid")
 	}
 
-	return userId, nil
+	return userId, nil, nil
 }
 
 func (h *ServerHandler) Receive(ag kim.Agent, payload []byte) {
 	_ = ag.Push([]byte("ok"))
 }
 
-func (h *ServerHandler) Disconnect(id string) error {
-	logger.Warnf("disconnect %s", id)
+func (h *ServerHandler) Disconnect(agent kim.Agent) error {
+	logger.Warnf("disconnect %s", agent.ID())
 
 	return nil
 }

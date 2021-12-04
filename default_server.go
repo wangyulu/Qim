@@ -112,10 +112,11 @@ func (s *DefaultServer) Start() error {
 			}
 
 			// 3. 交给上层处理认证等逻辑
-			id, err := s.Accept(conn, s.options.LoginWait)
+			id, meta, err := s.Accept(conn, s.options.LoginWait)
 			if err != nil {
 				// 没有通过认证，在关闭当前连接这前，要先通知客户端
 				_ = conn.WriteFrame(OpClose, []byte(err.Error()))
+				_ = conn.Flush()
 				_ = conn.Close()
 
 				// 结束处理当前连接的 goroutine
@@ -124,14 +125,19 @@ func (s *DefaultServer) Start() error {
 
 			if _, ok := s.Get(id); ok {
 				_ = conn.WriteFrame(OpClose, []byte("channelId is repeated"))
+				_ = conn.Flush()
 				_ = conn.Close()
 
 				// 结束处理当前连接的 goroutine
 				return
 			}
 
+			if meta == nil {
+				meta = Meta{}
+			}
+
 			// 4. 创建一个 channel 对象，并添加到连接管理中
-			channel := NewChannel(id, conn)
+			channel := NewChannel(id, meta, conn)
 			channel.SetReadWait(s.options.ReadWait)
 			channel.SetWriteWait(s.options.WriteWait)
 
@@ -148,7 +154,7 @@ func (s *DefaultServer) Start() error {
 			// 6. 如果 ReadLoop 返回一个 error，说明连接已经断开，Server 需要把它从 ChannelMap 中删除，并把连接断开事件通知上层
 			s.Remove(channel.ID())
 
-			_ = s.Disconnect(channel.ID())
+			_ = s.Disconnect(channel)
 
 			_ = channel.Close()
 
@@ -213,6 +219,6 @@ func (s *DefaultServer) SetChannelMap(channelMap ChannelMap) {
 type defaultAcceptor struct {
 }
 
-func (d *defaultAcceptor) Accept(conn Conn, timeout time.Duration) (string, error) {
-	return ksuid.New().String(), nil
+func (d *defaultAcceptor) Accept(conn Conn, timeout time.Duration) (string, Meta, error) {
+	return ksuid.New().String(), Meta{}, nil
 }

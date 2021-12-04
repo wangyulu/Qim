@@ -15,6 +15,7 @@ type ChannelImpl struct {
 	id string
 
 	Conn
+	Meta
 
 	writeChan chan []byte
 
@@ -24,7 +25,7 @@ type ChannelImpl struct {
 	closed *Event
 }
 
-func NewChannel(id string, conn Conn) Channel {
+func NewChannel(id string, meta Meta, conn Conn) Channel {
 	log := logger.WithFields(logger.Fields{
 		"module": "tcp_channel",
 		"id":     id,
@@ -33,6 +34,7 @@ func NewChannel(id string, conn Conn) Channel {
 	ch := &ChannelImpl{
 		id:        id,
 		Conn:      conn,
+		Meta:      meta,
 		writeChan: make(chan []byte, 5),
 		writeWait: DefaultWriteWait,
 		readWait:  DefaultReadWait,
@@ -91,12 +93,6 @@ func (ch *ChannelImpl) ReadLoop(lst MessageListener) error {
 	ch.Lock()
 	defer ch.Unlock()
 
-	log := logger.WithFields(logger.Fields{
-		"struct": "ChannelImpl",
-		"func":   "ReadLoop",
-		"id":     ch.id,
-	})
-
 	for {
 		if err := ch.SetReadDeadline(time.Now().Add(ch.readWait)); err != nil {
 			return err
@@ -112,8 +108,14 @@ func (ch *ChannelImpl) ReadLoop(lst MessageListener) error {
 		}
 
 		if frame.GetOpCode() == OpPing {
-			log.Trace("recv a ping; resp with a pong")
+			logger.WithFields(logger.Fields{
+				"struct": "ChannelImpl",
+				"func":   "Readloop",
+				"id":     ch.id,
+			}).Trace("recv a ping; resp with a pong")
+
 			_ = ch.WriteFrame(OpPong, nil)
+			_ = ch.Flush()
 			continue
 		}
 
@@ -165,4 +167,8 @@ func (ch *ChannelImpl) Close() error {
 	})
 
 	return nil
+}
+
+func (ch *ChannelImpl) GetMeta() Meta {
+	return ch.Meta
 }

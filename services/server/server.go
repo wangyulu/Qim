@@ -109,6 +109,9 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 
 	servHandler := serv.NewServHandler(r, cache)
 
+	meta := make(map[string]string)
+	meta["zone"] = config.Zone
+
 	service := &naming.DefaultService{
 		Id:       config.ServiceID,
 		Name:     opts.serviceName,
@@ -116,6 +119,7 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 		Port:     config.PublicPort,
 		Protocol: string(wire.ProtocolTCP),
 		Tags:     config.Tags,
+		Meta:     meta,
 	}
 
 	srv := tcp.NewServer(config.Listen, service)

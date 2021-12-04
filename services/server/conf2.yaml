@@ -1,7 +1,7 @@
-ServiceID: chat01
-Listen: ":8005"
+ServiceID: chat02
+Listen: ":8015"
 PublicAddress: localhost
-PublicPort: 8005
+PublicPort: 8015
 Zone: zone_ali_01
 Tags:
   - server

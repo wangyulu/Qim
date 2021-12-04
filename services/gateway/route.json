@@ -1,0 +1,19 @@
+{
+  "routeby": "app",
+  "zones": [
+    {
+      "id": "zone_ali_01",
+      "weight": 100
+    },
+    {
+      "id": "zone_ali_02",
+      "weight": 0
+    }
+  ],
+  "whiteList": [
+    {
+      "key": "kimcc",
+      "value": "zone_ali_02"
+    }
+  ]
+}

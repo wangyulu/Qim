@@ -29,23 +29,23 @@ func NewServHandler(r *kim.Router, cache kim.SessionStorage) *ServHandler {
 	}
 }
 
-func (h *ServHandler) Accept(conn kim.Conn, timeout time.Duration) (string, error) {
+func (h *ServHandler) Accept(conn kim.Conn, timeout time.Duration) (string, kim.Meta, error) {
 	log.Infoln("enter")
 
 	if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	frame, err := conn.ReadFrame()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	var req pkt.InnerHandshakeReq
 
 	_ = proto.Unmarshal(frame.GetPayload(), &req)
 
-	return req.ServiceId, nil
+	return req.ServiceId, nil, nil
 }
 
 func (h *ServHandler) Receive(agent kim.Agent, payload []byte) {
@@ -85,8 +85,8 @@ func (h *ServHandler) Receive(agent kim.Agent, payload []byte) {
 	}
 }
 
-func (h *ServHandler) Disconnect(id string) error {
-	logger.Warnf("close event of %s", id)
+func (h *ServHandler) Disconnect(agent kim.Agent) error {
+	logger.Warnf("close event of %s", agent.ID())
 
 	return nil
 }
