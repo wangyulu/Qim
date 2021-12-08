@@ -28,6 +28,8 @@ require (
 	github.com/magiconair/properties v1.8.5
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/panjf2000/ants/v2 v2.4.6 // indirect
+	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/common v0.26.0 // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sergi/go-diff v1.2.0 // indirect

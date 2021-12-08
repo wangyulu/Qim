@@ -2,6 +2,7 @@ ServiceID: chat02
 Listen: ":8015"
 PublicAddress: localhost
 PublicPort: 8015
+MonitorPort: 6012
 Zone: zone_ali_01
 Tags:
   - server

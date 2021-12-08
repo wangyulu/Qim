@@ -2,6 +2,7 @@ ServiceID: chat01
 Listen: ":8005"
 PublicAddress: localhost
 PublicPort: 8005
+MonitorPort: 6011
 Zone: zone_ali_01
 Tags:
   - server

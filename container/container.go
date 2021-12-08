@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"errors"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"jinv/kim"
 	"jinv/kim/logger"
 	"jinv/kim/naming"
@@ -47,6 +49,8 @@ type Container struct {
 	selector   Selector
 	dialer     kim.Dialer
 	deps       map[string]struct{}
+
+	monitor sync.Once
 }
 
 var log = logger.WithField("module", "container")
@@ -81,6 +85,21 @@ func Init(srv kim.Server, deps ...string) error {
 	c.srvClients = make(map[string]ClientMap, len(deps))
 
 	return nil
+}
+
+func EnableMonitor(listen string) {
+	c.monitor.Do(func() {
+		go func() {
+			// health
+			http.HandleFunc("/health", func(writer http.ResponseWriter, request *http.Request) {
+				_, _ = writer.Write([]byte("ok"))
+			})
+
+			// monitor
+			http.Handle("/metrics", promhttp.Handler())
+			_ = http.ListenAndServe(listen, nil)
+		}()
+	})
 }
 
 func SetDialer(dialer kim.Dialer) {
@@ -386,6 +405,9 @@ func pushMessage(packet *pkt.LogicPkt) error {
 	log.Debugf("Push to %v %v", channelIds, packet)
 
 	for _, channel := range channelIds {
+
+		messageOutFlowBytes.WithLabelValues(packet.Command).Add(float64(len(payload)))
+
 		err := c.Srv.Push(channel, payload)
 		if err != nil {
 			log.Debug(err)

@@ -63,6 +63,10 @@ func (s *RouteSelector) Lookup(header *pkt.Header, srvs []kim.Service) string {
 	// 过滤出所属 Zone 的所有 Servers
 	zoneSrvs := filterSrvs(zone, srvs)
 	if len(zoneSrvs) == 0 {
+		noServerFoundErrorTotal.WithLabelValues(zone).Inc()
+
+		log.Warnf("select a random service from all due to no service found in zone %s", zone)
+
 		i := rand.Intn(len(srvs))
 
 		return srvs[i].ServiceID()

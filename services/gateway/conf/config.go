@@ -19,6 +19,7 @@ type Config struct {
 	ConsulURL     string   `envconfig:"consulURL"`
 	LogLevel      string   `envconfig:"logLevel",default:"trace"`
 	Domain        string   `envconfig:"domain"`
+	MonitorPort   int      `envconfig:"monitorPort"`
 }
 
 func Init(file string) (*Config, error) {

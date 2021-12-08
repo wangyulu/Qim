@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -50,6 +51,7 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 	})
 
 	meta := make(map[string]string)
+	meta[consul.KeyHealthURL] = fmt.Sprintf("http://%s:%d/health", config.PublicAddress, config.MonitorPort)
 	meta["domain"] = config.Domain
 
 	handler := &serv.Handler{
@@ -80,6 +82,8 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 	if err := container.Init(srv, wire.SNChat, wire.SNLogin); err != nil {
 		return err
 	}
+
+	container.EnableMonitor(fmt.Sprintf(":%d", config.MonitorPort))
 
 	ns, err := consul.NewNaming(config.ConsulURL)
 	if err != nil {

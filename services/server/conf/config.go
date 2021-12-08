@@ -28,6 +28,7 @@ type Config struct {
 	RoyalURL          string   `envconfig:"royalURL"`
 	LogLevel          string   `envconfig:"logLevel",default:"trace"`
 	Zone              string   `envconfig:"zone"`
+	MonitorPort       int      `envconfig:"monitorPort"`
 }
 
 func (c Config) Stirng() string {

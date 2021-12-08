@@ -121,6 +121,9 @@ func (h *Handler) Receive(agent kim.Agent, payload []byte) {
 	if logicPkt, ok := packet.(*pkt.LogicPkt); ok {
 		logicPkt.ChannelId = agent.ID()
 
+		messageInTotal.WithLabelValues(h.ServiceID, wire.SNTGateway, logicPkt.Command).Inc()
+		messageInFlowBytes.WithLabelValues(h.ServiceID, wire.SNTGateway, logicPkt.Command).Add(float64(len(payload)))
+
 		if agent.GetMeta() != nil {
 			logicPkt.AddStringMeta(MetaKeyApp, agent.GetMeta()[MetaKeyApp])
 			logicPkt.AddStringMeta(MetaKeyAccount, agent.GetMeta()[MetaKeyAccount])

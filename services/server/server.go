@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -110,6 +111,7 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 	servHandler := serv.NewServHandler(r, cache)
 
 	meta := make(map[string]string)
+	meta[consul.KeyHealthURL] = fmt.Sprintf("http://%s:%d/health", config.PublicAddress, config.MonitorPort)
 	meta["zone"] = config.Zone
 
 	service := &naming.DefaultService{
@@ -132,6 +134,8 @@ func RunServerStart(ctx context.Context, opts *ServerStartOptions, version strin
 	if err := container.Init(srv); err != nil {
 		return err
 	}
+
+	container.EnableMonitor(fmt.Sprintf(":%d", config.MonitorPort))
 
 	ns, err := consul.NewNaming(config.ConsulURL)
 	if err != nil {

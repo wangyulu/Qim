@@ -10,6 +10,7 @@ import (
 
 	"github.com/gobwas/pool/pbufio"
 	"github.com/gobwas/ws"
+	"github.com/prometheus/common/log"
 	"github.com/segmentio/ksuid"
 	"jinv/kim/logger"
 )
@@ -96,70 +97,75 @@ func (s *DefaultServer) Start() error {
 			continue
 		}
 
-		go func(rawconn net.Conn) {
-			rd := pbufio.GetReader(rawconn, ws.DefaultServerReadBufferSize) // todo 应该要配置吧
-			wr := pbufio.GetWriter(rawconn, ws.DefaultServerWriteBufferSize)
-			defer func() {
-				pbufio.PutReader(rd)
-				pbufio.PutWriter(wr)
-			}()
-
-			conn, err := s.Upgrade(rawconn, rd, wr)
-			if err != nil {
-				logger.Errorf("Upgrade error: %v", err)
-				_ = rawconn.Close()
-				return
-			}
-
-			// 3. 交给上层处理认证等逻辑
-			id, meta, err := s.Accept(conn, s.options.LoginWait)
-			if err != nil {
-				// 没有通过认证，在关闭当前连接这前，要先通知客户端
-				_ = conn.WriteFrame(OpClose, []byte(err.Error()))
-				_ = conn.Flush()
-				_ = conn.Close()
-
-				// 结束处理当前连接的 goroutine
-				return
-			}
-
-			if _, ok := s.Get(id); ok {
-				_ = conn.WriteFrame(OpClose, []byte("channelId is repeated"))
-				_ = conn.Flush()
-				_ = conn.Close()
-
-				// 结束处理当前连接的 goroutine
-				return
-			}
-
-			if meta == nil {
-				meta = Meta{}
-			}
-
-			// 4. 创建一个 channel 对象，并添加到连接管理中
-			channel := NewChannel(id, meta, conn)
-			channel.SetReadWait(s.options.ReadWait)
-			channel.SetWriteWait(s.options.WriteWait)
-
-			s.Add(channel)
-
-			log.Infof("accept user %s in", channel.ID())
-
-			// 5. 循环读取消息，这是一个通用逻辑
-			err = channel.ReadLoop(s.MessageListener)
-			if err != nil {
-				log.Warnf("readloop - ", err)
-			}
-
-			// 6. 如果 ReadLoop 返回一个 error，说明连接已经断开，Server 需要把它从 ChannelMap 中删除，并把连接断开事件通知上层
-			s.Remove(channel.ID())
-
-			_ = s.Disconnect(channel)
-
-			_ = channel.Close()
-
-		}(rawconn)
+		go s.connHandler(rawconn)
 	}
+}
+
+func (s *DefaultServer) connHandler(rawconn net.Conn) {
+	rd := pbufio.GetReader(rawconn, ws.DefaultServerReadBufferSize) // todo 应该要配置吧
+	wr := pbufio.GetWriter(rawconn, ws.DefaultServerWriteBufferSize)
+	defer func() {
+		pbufio.PutReader(rd)
+		pbufio.PutWriter(wr)
+	}()
+
+	conn, err := s.Upgrade(rawconn, rd, wr)
+	if err != nil {
+		logger.Errorf("Upgrade error: %v", err)
+		_ = rawconn.Close()
+		return
+	}
+
+	// 3. 交给上层处理认证等逻辑
+	id, meta, err := s.Accept(conn, s.options.LoginWait)
+	if err != nil {
+		// 没有通过认证，在关闭当前连接这前，要先通知客户端
+		_ = conn.WriteFrame(OpClose, []byte(err.Error()))
+		_ = conn.Flush()
+		_ = conn.Close()
+
+		// 结束处理当前连接的 goroutine
+		return
+	}
+
+	if _, ok := s.Get(id); ok {
+		_ = conn.WriteFrame(OpClose, []byte("channelId is repeated"))
+		_ = conn.Flush()
+		_ = conn.Close()
+
+		// 结束处理当前连接的 goroutine
+		return
+	}
+
+	if meta == nil {
+		meta = Meta{}
+	}
+
+	// 4. 创建一个 channel 对象，并添加到连接管理中
+	channel := NewChannel(id, meta, conn)
+	channel.SetReadWait(s.options.ReadWait)
+	channel.SetWriteWait(s.options.WriteWait)
+
+	s.Add(channel)
+
+	gaugeWithLabel := channelTotalGauge.WithLabelValues(s.ServiceID(), s.ServiceName())
+	gaugeWithLabel.Inc()
+	defer gaugeWithLabel.Dec()
+
+	log.Infof("accept user %s in", channel.ID())
+
+	// 5. 循环读取消息，这是一个通用逻辑
+	err = channel.ReadLoop(s.MessageListener)
+	if err != nil {
+		log.Warnf("readloop - ", err)
+	}
+
+	// 6. 如果 ReadLoop 返回一个 error，说明连接已经断开，Server 需要把它从 ChannelMap 中删除，并把连接断开事件通知上层
+	s.Remove(channel.ID())
+
+	_ = s.Disconnect(channel)
+
+	_ = channel.Close()
 }
 
 func (s *DefaultServer) Shutdown(ctx context.Context) error {

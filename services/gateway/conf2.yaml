@@ -3,6 +3,7 @@ ServiceName: wgateway
 Listen: ":8008"
 PublicAddress: localhost
 PublicPort: 8008
+MonitorPort: 6002
 Tags:
   - IDC:HZ_ALI
 ConsulURL: localhost:8500
